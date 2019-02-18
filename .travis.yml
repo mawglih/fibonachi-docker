@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t mawglih/fibonachi-docker -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run mawglih/fibonachi-docker npm test -- --coverage
+
+after_success:
+  - docker build -t mawglih/multi-client ./client
+  - docker build -t mawglih/multi-nginx ./nginx
+  - docker build -t mawglih/multi-server ./server
+  - docker build -t mawglih/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push mawglih/multi-client
+  - docker push mawglih/multi-nginx
+  - docker push mawglih/multi-server
+  - docker push mawglih/multi-worker
+  
